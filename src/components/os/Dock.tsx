@@ -1,62 +1,31 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
-import { useOSStore } from "@/lib/store";
-import { AppId } from "@/types/os";
-import { Terminal, User, FolderGit2, BookOpen, Mail } from "lucide-react";
+import { useOSStore } from "@/store/useOSStore";
 
-interface DockItem {
-  id: AppId;
-  label: string;
-  icon: React.ReactNode;
-}
+export const Dock = () => {
+  const windows = useOSStore((state) => state.windows) || {};
+  const toggleWindow = useOSStore((state) => state.toggleWindow);
 
-const dockApps: DockItem[] = [
-  { id: "terminal", label: "Terminal", icon: <Terminal className="h-5 w-5 text-emerald-400" /> },
-  { id: "about", label: "About Me", icon: <User className="h-5 w-5 text-blue-400" /> },
-  { id: "projects", label: "Projects", icon: <FolderGit2 className="h-5 w-5 text-purple-400" /> },
-  { id: "guestbook", label: "Guestbook", icon: <BookOpen className="h-5 w-5 text-amber-400" /> },
-  { id: "contact", label: "Contact", icon: <Mail className="h-5 w-5 text-rose-400" /> },
-];
-
-export const Dock: React.FC = () => {
-  const { openWindow, focusWindow, windows } = useOSStore();
-
-  const handleAppClick = (id: AppId) => {
-    if (windows[id]?.isOpen) {
-      focusWindow(id);
-    } else {
-      openWindow(id);
-    }
-  };
+  const windowList = Object.values(windows);
 
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
-      <motion.div
-        initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 260, damping: 20 }}
-        className="flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-neutral-900/80 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/80"
-      >
-        {dockApps.map((app) => {
-          const isOpen = windows[app.id]?.isOpen;
-          return (
-            <button
-              key={app.id}
-              onClick={() => handleAppClick(app.id)}
-              className="relative group p-2.5 rounded-xl hover:bg-white/10 transition-all duration-200 flex flex-col items-center"
-              title={app.label}
-            >
-              {app.icon}
-              <span className="absolute -top-10 px-2 py-1 rounded bg-neutral-900 border border-neutral-700 text-[10px] text-neutral-200 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-md">
-                {app.label}
-              </span>
-              {isOpen && <span className="absolute -bottom-1 h-1 w-1 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />}
-            </button>
-          );
-        })}
-      </motion.div>
+    <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-50 max-w-[95vw]">
+      <div className="flex items-center gap-1.5 sm:gap-2.5 px-3 py-2 bg-neutral-900/85 backdrop-blur-2xl border border-neutral-800/80 rounded-2xl shadow-2xl overflow-x-auto no-scrollbar">
+        {(windowList || []).map((item) => (
+          <button
+            key={item.id}
+            onClick={() => toggleWindow(item.id)}
+            title={item.title}
+            className="relative group p-2 rounded-xl hover:bg-neutral-800/60 active:scale-90 transition-all duration-150 shrink-0 flex flex-col items-center justify-center min-w-[42px] min-h-[42px]"
+          >
+            <span className="text-xs font-mono text-neutral-300">{item.title[0]}</span>
+            {item.isOpen && (
+              <span className="absolute bottom-0.5 w-1 h-1 rounded-full bg-rose-500 shadow-[0_0_6px_#f43f5e]" />
+            )}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };
