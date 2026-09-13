@@ -14,10 +14,10 @@ export async function POST(req: Request) {
       );
     }
 
-    // Send email to your inbox
-    const data = await resend.emails.send({
-      from: "Portfolio Contact <onboarding@resend.dev>", // Default free Resend testing domain
-      to: ["prabhatneupane21@gmail.com"], // REPLACE WITH YOUR ACTUAL EMAIL ADDRESS
+    // Send email using Resend
+    const { data, error } = await resend.emails.send({
+      from: "Portfolio Contact <onboarding@resend.dev>",
+      to: ["YOUR_EXACT_RESEND_REGISTERED_EMAIL@gmail.com"], // Must match your Resend account email!
       subject: `New Portfolio Message from ${name}`,
       replyTo: email,
       html: `
@@ -32,10 +32,16 @@ export async function POST(req: Request) {
       `,
     });
 
+    if (error) {
+      console.error("Resend API Error:", error);
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
     return NextResponse.json({ success: true, data });
-  } catch (error) {
+  } catch (err: any) {
+    console.error("Server Route Error:", err);
     return NextResponse.json(
-      { error: "Failed to dispatch email" },
+      { error: err.message || "Failed to dispatch email" },
       { status: 500 }
     );
   }

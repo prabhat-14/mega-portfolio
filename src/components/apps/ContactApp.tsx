@@ -1,16 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
-import { Mail, Send, CheckCircle2, Copy, FolderGit2, Globe, ExternalLink, AlertCircle, Loader2 } from "lucide-react";
+import { Mail, Send, CheckCircle2, Copy, FolderGit2, Globe, ExternalLink, AlertCircle } from "lucide-react";
 
 export const ContactApp: React.FC = () => {
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [copied, setCopied] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const directEmail = "prabhatneupane@example.com"; // Your displayed email
+  // YOUR ACTUAL EMAIL ADDRESS HERE:
+  const directEmail = "prabhatneupane14@gmail.com"; 
 
   const handleCopyEmail = () => {
     navigator.clipboard.writeText(directEmail);
@@ -18,29 +18,31 @@ export const ContactApp: React.FC = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) return;
+  const handleTransmit = () => {
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+      setErrorMsg("Please fill out all fields before transmitting.");
+      return;
+    }
 
-    setLoading(true);
     setErrorMsg(null);
 
+    // Construct Mailto link
+    const subject = encodeURIComponent(`Portfolio Message from ${formData.name}`);
+    const body = encodeURIComponent(
+      `Name: ${formData.name}\nVisitor Email: ${formData.email}\n\nMessage:\n${formData.message}`
+    );
+
+    const mailtoUrl = `mailto:${directEmail}?subject=${subject}&body=${body}`;
+
     try {
-      const res = await fetch("/api/send-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      if (!res.ok) throw new Error("Failed to send email");
-
+      // Try launching direct mail client
+      window.open(mailtoUrl, "_self");
       setSubmitted(true);
-      setFormData({ name: "", email: "", message: "" });
       setTimeout(() => setSubmitted(false), 5000);
     } catch (err) {
-      setErrorMsg("Failed to dispatch message. Please try copying email directly.");
-    } finally {
-      setLoading(false);
+      // Fallback: Copy email to clipboard if pop-up is blocked
+      navigator.clipboard.writeText(directEmail);
+      setErrorMsg("Copied email to clipboard! Paste in your email app.");
     }
   };
 
@@ -54,6 +56,7 @@ export const ContactApp: React.FC = () => {
         </div>
         <button
           onClick={handleCopyEmail}
+          type="button"
           className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-neutral-900 border border-neutral-800 text-[10px] font-mono text-neutral-400 hover:text-white hover:border-neutral-700 transition-colors"
         >
           {copied ? <CheckCircle2 className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
@@ -90,8 +93,8 @@ export const ContactApp: React.FC = () => {
           </a>
         </div>
 
-        {/* Contact Form */}
-        <form onSubmit={handleSubmit} className="space-y-3 bg-neutral-900/40 p-3.5 rounded-xl border border-neutral-800/80">
+        {/* Contact Form Wrapper */}
+        <div className="space-y-3 bg-neutral-900/40 p-3.5 rounded-xl border border-neutral-800/80">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-[10px] font-mono uppercase text-neutral-400">Your Name</label>
@@ -101,7 +104,6 @@ export const ContactApp: React.FC = () => {
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-1.5 text-xs text-neutral-100 placeholder-neutral-600 outline-none focus:border-rose-500/50 transition-colors font-mono"
-                required
               />
             </div>
             <div className="space-y-1">
@@ -112,7 +114,6 @@ export const ContactApp: React.FC = () => {
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-1.5 text-xs text-neutral-100 placeholder-neutral-600 outline-none focus:border-rose-500/50 transition-colors font-mono"
-                required
               />
             </div>
           </div>
@@ -125,33 +126,32 @@ export const ContactApp: React.FC = () => {
               onChange={(e) => setFormData({ ...formData, message: e.target.value })}
               rows={4}
               className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-xs text-neutral-100 placeholder-neutral-600 outline-none focus:border-rose-500/50 transition-colors resize-none font-sans"
-              required
             />
           </div>
 
           <div className="flex items-center justify-between pt-1">
             {submitted ? (
               <span className="text-xs font-mono text-emerald-400 flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4" /> Email dispatched to inbox!
+                <CheckCircle2 className="h-4 w-4" /> Email client requested!
               </span>
             ) : errorMsg ? (
               <span className="text-[11px] font-mono text-rose-400 flex items-center gap-1">
                 <AlertCircle className="h-3.5 w-3.5" /> {errorMsg}
               </span>
             ) : (
-              <span className="text-[10px] font-mono text-neutral-500">// Direct SMTP routing</span>
+              <span className="text-[10px] font-mono text-neutral-500">// Direct mail dispatch</span>
             )}
 
             <button
-              type="submit"
-              disabled={loading || submitted}
-              className="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 disabled:opacity-50"
+              type="button"
+              onClick={handleTransmit}
+              className="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 active:scale-95"
             >
-              {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
-              <span>{loading ? "Sending..." : "Transmit"}</span>
+              <Send className="h-3 w-3" />
+              <span>Transmit</span>
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
