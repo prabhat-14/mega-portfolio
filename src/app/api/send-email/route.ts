@@ -1,10 +1,19 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(req: Request) {
   try {
+    const apiKey = process.env.RESEND_API_KEY;
+
+    if (!apiKey) {
+      console.error("Missing RESEND_API_KEY environment variable.");
+      return NextResponse.json(
+        { error: "Server configuration error: missing API key" },
+        { status: 500 }
+      );
+    }
+
+    const resend = new Resend(apiKey);
     const { name, email, message } = await req.json();
 
     if (!name || !email || !message) {
@@ -14,10 +23,9 @@ export async function POST(req: Request) {
       );
     }
 
-    // Send email using Resend
     const { data, error } = await resend.emails.send({
       from: "Portfolio Contact <onboarding@resend.dev>",
-      to: ["YOUR_EXACT_RESEND_REGISTERED_EMAIL@gmail.com"], // Must match your Resend account email!
+      to: ["prabhatneupane14@gmail.com"],
       subject: `New Portfolio Message from ${name}`,
       replyTo: email,
       html: `
@@ -33,16 +41,12 @@ export async function POST(req: Request) {
     });
 
     if (error) {
-      console.error("Resend API Error:", error);
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
     return NextResponse.json({ success: true, data });
-  } catch (err: any) {
-    console.error("Server Route Error:", err);
-    return NextResponse.json(
-      { error: err.message || "Failed to dispatch email" },
-      { status: 500 }
-    );
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : "Internal server error";
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
