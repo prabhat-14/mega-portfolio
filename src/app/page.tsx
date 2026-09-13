@@ -8,16 +8,17 @@ import {
   Code2,
   FolderGit2,
   Mail,
+  BookOpen,
   Monitor,
   X,
   Palette,
 } from "lucide-react";
 import { ContactApp } from "@/components/apps/ContactApp";
+import { GuestbookApp } from "@/components/apps/GuestbookApp";
 
-type AppId = "about" | "skills" | "projects" | "contact" | null;
+type AppId = "about" | "skills" | "projects" | "contact" | "guest" | null;
 type ThemeColor = "rose" | "emerald" | "cyan" | "amber";
 
-// Mapping Tailwind classes dynamically per theme
 const themeConfig: Record<
   ThemeColor,
   {
@@ -104,6 +105,7 @@ export default function Home() {
     { id: "skills", name: "Skills & Tech", icon: Code2, tag: "STACK" },
     { id: "projects", name: "Projects", icon: FolderGit2, tag: "WORK" },
     { id: "contact", name: "Contact System", icon: Mail, tag: "DISPATCH" },
+    { id: "guest", name: "Guestbook", icon: BookOpen, tag: "GUEST" },
   ];
 
   return (
@@ -162,7 +164,7 @@ export default function Home() {
         </div>
 
         {/* Desktop Apps Navigation Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {apps.map((app) => {
             const Icon = app.icon;
             const isActive = activeApp === app.id;
@@ -187,7 +189,7 @@ export default function Home() {
                   </span>
                 </div>
                 <div>
-                  <p className="font-bold text-neutral-200">{app.name}</p>
+                  <p className="font-bold text-neutral-200 text-xs sm:text-sm">{app.name}</p>
                 </div>
               </button>
             );
@@ -280,7 +282,7 @@ export default function Home() {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                     <div className="p-4 bg-neutral-950/80 rounded-xl border border-neutral-800 space-y-2 hover:border-neutral-700 transition-colors">
-                      <h3 className="font-bold text-neutral-100 text-sm">OS-Style Portfolio</h3>
+                      <h3 className="font-bold text-neutral-100 text-sm">mega-portfolio</h3>
                       <p className="text-neutral-400 text-[11px] leading-relaxed">
                         Interactive terminal and desktop OS interface constructed with Next.js, Tailwind CSS, and Lucide Icons.
                       </p>
@@ -312,6 +314,7 @@ export default function Home() {
               )}
 
               {activeApp === "contact" && <ContactApp />}
+              {activeApp === "guest" && <GuestbookApp />}
             </div>
           </div>
         )}
