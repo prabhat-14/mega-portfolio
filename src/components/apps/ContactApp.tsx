@@ -10,7 +10,7 @@ export const ContactApp: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // YOUR ACTUAL EMAIL ADDRESS HERE:
-  const directEmail = "prabhatneupane14@gmail.com"; 
+  const directEmail = "prabhatneupane21@gmail.com"; 
 
   const handleCopyEmail = () => {
     navigator.clipboard.writeText(directEmail);
