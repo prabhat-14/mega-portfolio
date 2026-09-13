@@ -1,14 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
-import { Mail, Send, CheckCircle2, Copy, FolderGit2, Globe, ExternalLink } from "lucide-react";
+import { Mail, Send, CheckCircle2, Copy, FolderGit2, Globe, ExternalLink, AlertCircle, Loader2 } from "lucide-react";
 
 export const ContactApp: React.FC = () => {
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [copied, setCopied] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const directEmail = "prabhatneupane@example.com";
+  const directEmail = "prabhatneupane@example.com"; // Your displayed email
 
   const handleCopyEmail = () => {
     navigator.clipboard.writeText(directEmail);
@@ -16,15 +18,30 @@ export const ContactApp: React.FC = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) return;
 
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
+    setLoading(true);
+    setErrorMsg(null);
+
+    try {
+      const res = await fetch("/api/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) throw new Error("Failed to send email");
+
+      setSubmitted(true);
       setFormData({ name: "", email: "", message: "" });
-    }, 4000);
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch (err) {
+      setErrorMsg("Failed to dispatch message. Please try copying email directly.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -48,7 +65,7 @@ export const ContactApp: React.FC = () => {
         {/* Direct Social Links */}
         <div className="grid grid-cols-2 gap-2">
           <a
-            href="https://github.com"
+            href="https://github.com/prabhat-14"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-between p-2.5 rounded-lg bg-neutral-900/60 border border-neutral-800 hover:border-rose-500/30 transition-colors group"
@@ -115,18 +132,23 @@ export const ContactApp: React.FC = () => {
           <div className="flex items-center justify-between pt-1">
             {submitted ? (
               <span className="text-xs font-mono text-emerald-400 flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4" /> Message dispatched successfully!
+                <CheckCircle2 className="h-4 w-4" /> Email dispatched to inbox!
+              </span>
+            ) : errorMsg ? (
+              <span className="text-[11px] font-mono text-rose-400 flex items-center gap-1">
+                <AlertCircle className="h-3.5 w-3.5" /> {errorMsg}
               </span>
             ) : (
-              <span className="text-[10px] font-mono text-neutral-500">// Direct routing enabled</span>
+              <span className="text-[10px] font-mono text-neutral-500">// Direct SMTP routing</span>
             )}
 
             <button
               type="submit"
-              disabled={submitted}
+              disabled={loading || submitted}
               className="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 disabled:opacity-50"
             >
-              <Send className="h-3 w-3" /> Transmit
+              {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+              <span>{loading ? "Sending..." : "Transmit"}</span>
             </button>
           </div>
         </form>
